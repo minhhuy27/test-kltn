@@ -156,23 +156,28 @@
 
 ### 3.1. Sơ đồ luồng tổng thể
 ```
-Honeypot Bucket → Cloud Audit Logs → Log Sink → Pub/Sub
-                                    → Log-based Metric → Alert Policy → Pub/Sub
-                                                                         ↓
-                                                            Orchestrator Bot (Cloud Function)
-                                                                         ↓
-                                                            4 lớp Enrichment → AI Triage → Telegram Alert
-                                                                                              ↓ (Admin nhấn Approve)
-                                                            Webhook Remediation (Cloud Function)
-                                                                         ↓
-                                                            Disable SA + SCC Finding + Audit Log
+                                    ┌→ Log Sink → BigQuery (lưu trữ dài hạn — KHÔNG nằm trong luồng chính)
+                                    │
+Honeypot Bucket → Cloud Audit Logs ─┤
+                                    │
+                                    └→ Log-based Metric → Alert Policy → Pub/Sub
+                                                                           ↓
+                                                              Orchestrator Bot (Cloud Function)
+                                                                           ↓
+                                                              4 lớp Enrichment → AI Triage → Telegram Alert
+                                                                                                ↓ (Admin nhấn Approve)
+                                                              Webhook Remediation (Cloud Function)
+                                                                           ↓
+                                                              Disable SA + SCC Finding + Audit Log
 ```
+
+> ⚠️ **Lưu ý quan trọng:** Log Sink **KHÔNG** nằm trong luồng phát hiện chính. Nó chỉ đẩy log vào BigQuery để lưu trữ dài hạn và phục vụ truy vấn YARA-L → SQL. Luồng phát hiện chính đi qua: Log-based Metric → Alert Policy → Pub/Sub → Cloud Function.
 
 ### 3.2. Ba vùng kiến trúc
 
 | Vùng | Thành phần | Chức năng |
 |---|---|---|
-| **Vùng 1: Phát hiện** | Honeypot Bucket, Cloud Audit Logs, Log Sink, Log-based Metric, Alert Policy | Phát hiện hành vi bất thường |
+| **Vùng 1: Phát hiện** | Honeypot Bucket, Cloud Audit Logs, Log-based Metric, Alert Policy, Pub/Sub | Phát hiện hành vi bất thường |
 | **Vùng 2: Phân tích** | Orchestrator Bot, Context Enrichment (4 lớp), Dual-AI Triage | Làm giàu ngữ cảnh + AI đánh giá |
 | **Vùng 3: Phản ứng** | Telegram Bot, Webhook Remediation, IAM API, SCC V2 | Human-in-the-loop + tự động xử lý |
 
@@ -185,10 +190,10 @@ Honeypot Bucket → Cloud Audit Logs → Log Sink → Pub/Sub
 - **Cơ chế:** Mọi truy cập `storage.objects.get` đều được ghi vào Cloud Audit Logs (Data Access)
 - **Ý nghĩa:** Bất kỳ ai tải file = hành vi đáng ngờ (vì không ai có lý do hợp lệ truy cập)
 
-### 4.2. Log Sink + Pub/Sub
-- **Log Sink:** Bộ lọc chuyển tiếp audit log từ Cloud Logging sang Pub/Sub topic
-- **Pub/Sub:** Message queue trung gian — đảm bảo delivery ít nhất 1 lần (at-least-once)
-- **Tại sao cần Pub/Sub?** Giải ghép (decouple) giữa nguồn log và hàm xử lý
+### 4.2. Log Sink (BigQuery) + Pub/Sub
+- **Log Sink (`soc-datalake-sink`):** Đẩy Cloud Audit Logs vào **BigQuery** để lưu trữ dài hạn (data lake). **KHÔNG** nằm trong luồng phát hiện chính — chỉ phục vụ truy vấn YARA-L → SQL và forensic sau sự cố
+- **Pub/Sub:** Message queue trung gian nhận notification từ **Alert Policy** (không phải từ Log Sink) — đảm bảo delivery ít nhất 1 lần (at-least-once)
+- **Tại sao cần Pub/Sub?** Giải ghép (decouple) giữa Alert Policy và Cloud Function xử lý
 
 ### 4.3. Log-based Metric + Alert Policy
 - **Log-based Metric:** Đếm số lượt `storage.objects.get` theo `principalEmail`
@@ -213,9 +218,9 @@ Honeypot Bucket → Cloud Audit Logs → Log Sink → Pub/Sub
 ### 4.5. AI Triage — Kiến trúc Dual-AI
 
 **Primary:** Gemini 2.5 Flash
-- `temperature = 0.1` (giảm tính ngẫu nhiên, tăng tính nhất quán)
+- `temperature = 0.1` (giảm tính ngẫu nhiên, tăng tính nhất quán) — **dòng 361** trong `orchestrator_bot/main.py`
 - `responseMimeType = "application/json"` (output JSON có cấu trúc)
-- Timeout: 60 giây
+- Timeout: 60 giây (cấu hình qua biến môi trường `GEMINI_TIMEOUT`)
 
 **Fallback:** OpenAI GPT
 - Tự động kích hoạt khi Gemini lỗi (timeout, API error, rate limit)
@@ -277,10 +282,12 @@ signature = HMAC-SHA256(signing_secret, sign_payload)
 - Webhook kiểm tra chữ ký trước khi thực thi
 - Dùng `hmac.compare_digest()` → chống timing attack
 
-### 5.2. Link Expiry
+### 5.2. Link Expiry (2 chiều kiểm tra)
 - `issued_at` được nhúng vào URL khi tạo
-- Webhook kiểm tra: `now - issued_at > 3600s` → từ chối (link hết hạn sau 1 giờ)
-- Cũng kiểm tra `issued_at > now + 300s` → từ chối (chống gian lận thời gian)
+- **Kiểm tra 1 — Hết hạn:** `now - issued_at > 3600s` → từ chối (link hết hạn sau 1 giờ)
+- **Kiểm tra 2 — Chống giả mạo tương lai:** `issued_at > now + 300s` → từ chối
+  - **Tại sao?** Nếu kẻ tấn công giả mạo `issued_at` vào tương lai xa (VD: +10 giờ), phép tính `now - issued_at` sẽ luôn **âm** → link **không bao giờ hết hạn**, vô hiệu hóa hoàn toàn cơ chế Link Expiry
+  - **300 giây (5 phút)** = dung sai clock skew hợp lý giữa 2 server (Orchestrator tạo link vs Webhook kiểm tra)
 
 ### 5.3. One-Time-Use Guard
 **Vấn đề:** Admin có thể nhấn "Approve" nhiều lần → double-remediation
