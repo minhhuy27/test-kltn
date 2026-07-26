@@ -216,20 +216,20 @@
 | Câu hỏi | Trả lời tóm tắt |
 |---|---|
 | "Tại sao serverless?" | Trả phí theo lượt, tự động mở rộng, không cần máy chủ 24/7 |
-| "Chronicle vs Splunk?" | Cloud-native, UDM chuẩn hóa, tích hợp SIEM+SOAR |
-| "Pub/Sub nghẽn?" | Hạn chế: chưa cấu hình retry/DLQ → message mất sẽ không được xử lý. Hướng phát triển: bổ sung Retry + dead-letter queue |
+| "Chronicle vs Splunk?" | Kiến trúc Cloud-native, UDM chuẩn hóa, tích hợp SIEM+SOAR |
+| "Pub/Sub nghẽn?" | Hạn chế: chưa cấu hình cơ chế thử lại và hàng chờ chết (dead-letter queue) → tin nhắn mất sẽ không được xử lý. Hướng phát triển: bổ sung thử lại + hàng chờ chết |
 | "SOAR khác SIEM?" | SIEM thu thập & phân tích, SOAR tự động hóa phản ứng |
-| "Attacker biết honeypot?" | Defense-in-depth, không chỉ dựa vào honeypot |
-| "UDM vs Enrichment?" | UDM chuẩn hóa đa nguồn + ngữ cảnh; hệ thống 1 nguồn log nên tập trung enrichment |
+| "Kẻ tấn công biết honeypot?" | Phòng thủ nhiều lớp (defense-in-depth), không chỉ dựa vào honeypot |
+| "UDM vs làm giàu ngữ cảnh?" | UDM chuẩn hóa log đa nguồn + ngữ cảnh; hệ thống 1 nguồn log nên tập trung làm giàu ngữ cảnh |
 
 ### Người B trả lời (AI & Bảo mật & Đánh giá)
 | Câu hỏi | Trả lời tóm tắt |
 |---|---|
-| "Gemini hallucinate?" | Fixed JSON schema + validate 7 trường + human-in-the-loop |
-| "Tại sao 2 engine?" | → Lật backup B5 |
-| "AI bị adversarial?" | Pipeline deterministic, AI chỉ phân tích không quyết định |
-| "HMAC đủ an toàn?" | Chuẩn công nghiệp + TTL 1h + one-time-use guard |
-| "Enrichment cần thiết?" | → Lật backup B4 |
+| "Gemini bị ảo giác?" | Lược đồ JSON cố định + xác thực 7 trường + con người kiểm duyệt (Human in the loop) |
+| "Tại sao 2 mô hình?" | → Lật backup B5 |
+| "AI bị tấn công đối kháng?" | Luồng xử lý cố định, AI chỉ phân tích không quyết định |
+| "HMAC đủ an toàn?" | Chuẩn công nghiệp + hết hạn sau 1 giờ + chỉ dùng 1 lần |
+| "Làm giàu ngữ cảnh cần thiết?" | → Lật backup B4 |
 | "So với SOC thương mại?" | PoC chứng minh tính khả thi, phạm vi 1 kịch bản |
 | "Giảm MTTD được không?" | → Lật backup B9 |
 
