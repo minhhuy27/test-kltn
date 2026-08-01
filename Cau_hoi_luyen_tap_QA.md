@@ -55,7 +55,7 @@
 ### 2.1 ⭐ "Gemini có thể bị ảo giác (hallucination) không? Làm sao kiểm soát?"
 **Độ khó:** Khó — rất hay bị hỏi
 
-> *"Dạ, mọi mô hình ngôn ngữ lớn đều có rủi ro ảo giác. Em kiểm soát bằng 3 cơ chế: Thứ nhất, lược đồ JSON cố định bắt buộc 7 trường — nếu AI trả thiếu hoặc sai định dạng, hệ thống từ chối và chuyển sang mô hình dự phòng. Thứ hai, xác thực đầu ra — severity phải nằm trong LOW/MEDIUM/HIGH/CRITICAL, confidence từ 0.0 đến 1.0. Thứ ba, cơ chế con người kiểm duyệt — AI chỉ đề xuất, SOC admin quyết định có phê duyệt hay không. AI không tự động khóa tài khoản."*
+> *"Dạ, mọi mô hình ngôn ngữ lớn đều có rủi ro ảo giác. Em kiểm soát bằng 3 cơ chế: Thứ nhất, lược đồ JSON cố định bắt buộc 7 trường — hàm `_validate_triage_output` trong mã nguồn kiểm tra nếu AI trả thiếu bất kỳ trường nào, hệ thống ném lỗi và tự động chuyển sang mô hình dự phòng. Thứ hai, prompt được thiết kế cố định — yêu cầu AI chỉ trả severity trong 4 mức LOW/MEDIUM/HIGH/CRITICAL, confidence từ 0.0 đến 1.0, và không thêm key ngoài lược đồ. Thứ ba, cơ chế con người kiểm duyệt — AI chỉ đề xuất, SOC admin xem toàn bộ phân tích trên Telegram rồi mới quyết định phê duyệt. AI không tự động khóa tài khoản."*
 
 ---
 
@@ -76,7 +76,7 @@
 ### 2.4 "Làm giàu ngữ cảnh (Context Enrichment) có thực sự cần thiết không?"
 **Độ khó:** Trung bình
 
-> *"Dạ rất cần thiết. Em có dữ liệu so sánh: cùng hành vi gsutil tải file, không có enrichment thì AI đánh giá MEDIUM với confidence 0.6. Khi bổ sung IP nước ngoài kết hợp ngoài giờ hành chính, AI nhận diện CRITICAL với confidence 1.0. Enrichment giúp AI phân biệt được mức độ rủi ro theo tổng thể ngữ cảnh, thay vì chỉ dựa vào hành vi đơn lẻ. Em có thể mở Telegram để Hội đồng thấy trực tiếp nhiều kịch bản khác nhau."*
+> *"Dạ rất cần thiết. Em có dữ liệu so sánh: cùng hành vi gsutil tải file, không có enrichment thì AI đánh giá ngẫu nhiên HIGH và CRITICAL. Khi bổ sung IP nước ngoài kết hợp ngoài giờ hành chính, AI nhận diện CRITICAL với confidence 1.0. Enrichment giúp AI phân biệt được mức độ rủi ro theo tổng thể ngữ cảnh, thay vì chỉ dựa vào hành vi đơn lẻ. Em có thể mở Telegram để Hội đồng thấy trực tiếp nhiều kịch bản khác nhau."*
 
 ---
 
@@ -136,7 +136,7 @@
 ### 4.2 "96% thời gian nằm ở Cloud Monitoring — có cách giảm không?"
 **Độ khó:** Trung bình
 
-> *"Dạ có ạ. 253 giây trong tổng 265 giây là do Cloud Monitoring gom chỉ số với cửa sổ mặc định 60 giây. Có 2 hướng giảm: Một là chuyển sang Log Sink thời gian thực — giảm xuống 10-15 giây nhưng chi phí tăng. Hai là giảm metric window xuống 30 giây — nhưng có thể gây cảnh báo giả. Em đề xuất phương án kết hợp ở slide backup B9."*
+> *"Dạ có ạ. 253 giây trong tổng 265 giây là do Cloud Monitoring gom chỉ số với cửa sổ tối thiểu 60 giây — đây là giới hạn cứng của GCP API, không thể giảm xuống thấp hơn. Vì vậy chỉ có 1 hướng giảm thực tế: chuyển sang Log Sink thời gian thực — mỗi dòng log kích hoạt trực tiếp Cloud Function, giảm MTTD xuống 10-15 giây. Tuy nhiên, chi phí tăng tuyến tính vì mỗi sự kiện log đều gọi 1 Function. Em đề xuất phương án kết hợp: Log Sink cho tài sản trọng yếu, Cloud Monitoring cho phần còn lại. Chi tiết ở slide backup B9."*
 
 ---
 
@@ -151,13 +151,6 @@
 **Độ khó:** Khó
 
 > *"Dạ, trong 18 kịch bản kiểm chứng, tỷ lệ phát hiện đúng đạt 100% và không có cảnh báo giả — vì tất cả đều là hành vi tấn công thật trên honeypot bucket. Tuy nhiên, em lưu ý: honeypot bucket được thiết kế sao cho bất kỳ ai truy cập đều đáng ngờ — nên false positive rất thấp theo thiết kế. Trong môi trường thực tế với bucket chứa dữ liệu sản xuất, tỷ lệ cảnh báo giả có thể cao hơn và cần điều chỉnh ngưỡng."*
-
----
-
-### 4.5 "Chi phí thực tế khi triển khai cho doanh nghiệp là bao nhiêu?"
-**Độ khó:** Trung bình
-
-> *"Dạ, trong thử nghiệm, toàn bộ nằm trong Free Tier. Nếu triển khai thực tế, chi phí chính gồm: Cloud Functions tính theo số lượt gọi — khoảng 0.40 USD cho 1 triệu lượt. Gemini API tính theo token. Cloud Monitoring miễn phí cho metric cơ bản. Ước tính cho tổ chức nhỏ với khoảng 100 cảnh báo/tháng, chi phí dưới 10 USD/tháng — rẻ hơn rất nhiều so với giấy phép SIEM truyền thống."*
 
 ---
 
@@ -196,14 +189,14 @@
 ### 6.1 ⭐ "Đóng góp chính của đề tài là gì?"
 **Độ khó:** Dễ — nhưng rất quan trọng
 
-> *"Dạ, đóng góp chính gồm 3 điểm: Thứ nhất, chứng minh tính khả thi của việc xây dựng pipeline SOAR serverless trên GCP mà không cần giấy phép Chronicle — phù hợp tổ chức vừa và nhỏ. Thứ hai, chứng minh làm giàu ngữ cảnh 4 lớp giúp AI phân loại chính xác hơn — severity thay đổi từ MEDIUM lên CRITICAL khi có đủ ngữ cảnh. Thứ ba, toàn bộ hạ tầng IaC bằng Terraform có thể tái tạo hoàn toàn từ mã nguồn — phục vụ nghiên cứu và giảng dạy."*
+> *"Dạ, đóng góp chính gồm 3 điểm: Thứ nhất, chứng minh tính khả thi của việc xây dựng pipeline SOAR serverless trên GCP mà không cần giấy phép Chronicle — phù hợp tổ chức vừa và nhỏ. Thứ hai, chứng minh làm giàu ngữ cảnh 4 lớp giúp AI phân loại chính xác hơn — severity thay đổi từ HIGH lên CRITICAL khi có đủ ngữ cảnh. Thứ ba, toàn bộ hạ tầng IaC bằng Terraform có thể tái tạo hoàn toàn từ mã nguồn — phục vụ nghiên cứu và giảng dạy."*
 
 ---
 
 ### 6.2 "Nếu có thêm thời gian, em sẽ làm gì khác?"
 **Độ khó:** Dễ
 
-> *"Dạ, em sẽ tập trung 3 điểm: Một, chuyển sang Log Sink thời gian thực giảm MTTD xuống dưới 30 giây. Hai, mở rộng kịch bản leo thang đặc quyền và di chuyển ngang để hệ thống bao quát hơn. Ba, tích hợp tình báo mối đe dọa như VirusTotal hoặc AbuseIPDB để AI có thêm dữ liệu phân tích — ví dụ kiểm tra IP có nằm trong danh sách đen không."*
+> *"Dạ, em sẽ tập trung 3 điểm: Một, thêm luồng Log Sink thời gian thực giảm MTTD xuống dưới 30 giây. Hai, mở rộng kịch bản leo thang đặc quyền và di chuyển ngang để hệ thống bao quát hơn. Ba, tích hợp tình báo mối đe dọa như VirusTotal hoặc AbuseIPDB để AI có thêm dữ liệu phân tích — ví dụ kiểm tra IP có nằm trong danh sách đen không."*
 
 ---
 
@@ -224,7 +217,7 @@
 ### 6.5 "Em đánh giá tính mới (novelty) của đề tài như thế nào?"
 **Độ khó:** Khó
 
-> *"Dạ, em không khẳng định đề tài có tính mới đột phá. Các thành phần riêng lẻ — serverless, AI phân tích log, honeypot — đều đã tồn tại. Đóng góp chính nằm ở cách kết hợp: xây dựng pipeline SOAR end-to-end hoàn toàn serverless trên GCP, tích hợp AI kép với cơ chế dự phòng, và chứng minh bằng 18 kịch bản thực nghiệm rằng làm giàu ngữ cảnh cải thiện đáng kể chất lượng phân loại AI. Toàn bộ mã nguồn và hạ tầng IaC có thể tái tạo — phục vụ cộng đồng nghiên cứu."*
+> *"Dạ, em không khẳng định đề tài có tính mới đột phá. Các thành phần riêng lẻ — serverless, AI phân tích log, honeypot — đều đã tồn tại. Đóng góp chính nằm ở cách kết hợp: xây dựng pipeline SOAR end-to-end hoàn toàn serverless trên GCP, tích hợp AI kép với cơ chế dự phòng, và chứng minh bằng 18 lần thực nghiệm rằng làm giàu ngữ cảnh cải thiện đáng kể chất lượng phân loại AI. Toàn bộ mã nguồn và hạ tầng IaC có thể tái tạo — phục vụ cộng đồng nghiên cứu."*
 
 ---
 
