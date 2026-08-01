@@ -41,7 +41,7 @@
 ### Slide 3 — Mục tiêu & Phạm vi
 👤 NGƯỜI A
 
-🎤 *"Về mục tiêu lý thuyết, nhóm em nghiên cứu hạn chế của SIEM/SOC truyền thống, tìm hiểu SOAR và kiến trúc Cloud-Native của Google Chronicle bao gồm UDM và YARA-L. Về thực tiễn, em xây dựng Lab trên GCP, giả lập tấn công đánh cắp thông tin xác thực và rút trộm dữ liệu (credential theft & data exfiltration), thiết kế phát hiện theo sự kiện (event-driven), tích hợp làm giàu ngữ cảnh 4 lớp (context enrichment) và AI kép Gemini/OpenAI, đồng thời thử nghiệm chuyển đổi YARA-L sang SQL trên BigQuery. Phạm vi đã thực hiện: 18 kịch bản kiểm chứng trên GCP, tự xây luồng xử lý thay thế Chronicle native. Ngoài phạm vi: chưa triển khai trên mạng doanh nghiệp thực tế, chưa bao quát toàn bộ MITRE ATT&CK, và không sử dụng giao diện Chronicle do giới hạn giấy phép."*
+🎤 *"Về mục tiêu lý thuyết, nhóm em nghiên cứu hạn chế của SIEM/SOC truyền thống, tìm hiểu SOAR và kiến trúc Cloud-Native của Google Chronicle bao gồm UDM và YARA-L. Về thực tiễn, em xây dựng Lab trên GCP, giả lập tấn công đánh cắp thông tin xác thực và rút trộm dữ liệu (credential theft & data exfiltration), thiết kế phát hiện theo sự kiện (event-driven), tích hợp làm giàu ngữ cảnh 4 lớp (context enrichment) và AI kép Gemini/OpenAI, đồng thời thử nghiệm chuyển đổi YARA-L sang SQL trên BigQuery. Phạm vi đã thực hiện: 18 lần kiểm chứng trên GCP, tự xây luồng xử lý thay thế Chronicle native. Ngoài phạm vi: chưa triển khai trên mạng doanh nghiệp thực tế, chưa bao quát toàn bộ MITRE ATT&CK, và không sử dụng giao diện Chronicle do giới hạn giấy phép."*
 
 ⏱️ ~50 giây
 
@@ -82,7 +82,7 @@
 🎤 *"Cơ chế phát hiện dùng event-driven: Log-based Metric đếm trên 25 lần objects.get trong 60 giây thì kích hoạt Cloud Function. Function thực hiện làm giàu ngữ cảnh 4 lớp: : IP, vị trí địa lý, công cụ sử dụng, thời gian. Mỗi lớp giúp bổ sung ngữ cảnh để AI đánh giá chính xác hơn. Ví dụ: cùng hành vi tải file, nếu IP nước ngoài kết hợp Python SDK và ngoài giờ hành chính → CRITICAL; ngược lại IP Việt Nam trong giờ → chỉ HIGH."*
 
 📌 **CÂU CHUYỂN GIAO:**
-🎤 *"Vừa rồi em đã trình bày kiến trúc tổng thể và cơ chế phát hiện. Bây giờ bạn Nguyễn Minh Huy sẽ trình bày chi tiết về AI Triage Pipeline, cơ chế phản ứng tự động và kết quả đánh giá."*
+🎤 *"Vừa rồi em đã trình bày kiến trúc tổng thể và cơ chế phát hiện. Bây giờ bạn Nguyễn Minh Huy sẽ trình bày chi tiết về luồng phân loại bằng AI, cơ chế phản ứng tự động và kết quả đánh giá."*
 
 ⏱️ ~50 giây (bao gồm chuyển giao)
 
