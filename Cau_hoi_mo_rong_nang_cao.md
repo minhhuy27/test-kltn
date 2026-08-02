@@ -76,7 +76,7 @@
 ### 2.6 🔴 "Hệ thống có xử lý race condition không? Nếu 2 admin nhấn Approve cùng lúc?"
 **Độ khó:** Khó
 
-> *"Dạ, hiện tại hệ thống gửi cảnh báo đến 1 chat ID trên Telegram, nên chỉ có 1 admin nhận. Tuy nhiên, nếu mở rộng cho nhóm admin, có thể xảy ra race condition: 2 người nhấn Approve cùng lúc, cả 2 request đến webhook đồng thời. Cơ chế hiện tại: request đầu tiên vô hiệu hóa SA thành công, request thứ hai kiểm tra thấy SA đã disabled nên trả về 'already processed'. Tuy vậy, có khoảng thời gian rất ngắn giữa 2 request mà cả 2 đều thấy SA còn enabled — đây là hạn chế cần giải quyết bằng distributed lock nếu triển khai production."*
+> *"Dạ, hiện tại hệ thống gửi cảnh báo đến 1 nhóm chat Telegram. Do đó, có thể xảy ra race condition: 2 người nhấn Approve cùng lúc, cả 2 request đến webhook đồng thời. Cơ chế hiện tại: request đầu tiên vô hiệu hóa SA thành công, request thứ hai kiểm tra thấy SA đã disabled nên trả về 'already processed'. Tuy vậy, có khoảng thời gian rất ngắn giữa 2 request mà cả 2 đều thấy SA còn enabled — đây là hạn chế cần giải quyết bằng distributed lock nếu triển khai production."*
 
 ---
 
@@ -92,7 +92,7 @@
 ### 3.2 "So sánh với AWS GuardDuty hoặc Azure Sentinel?"
 **Độ khó:** Khó
 
-> *"Dạ, AWS GuardDuty và Azure Sentinel là dịch vụ managed detection — Google có dịch vụ tương đương là Chronicle và SCC Premium. Hệ thống của em khác ở chỗ: đây là pipeline tự xây hoàn toàn bằng dịch vụ cơ bản — không dùng managed detection. Ưu điểm: miễn phí, linh hoạt, hiểu rõ từng thành phần. Nhược điểm: phạm vi hẹp, thiếu threat intelligence tích hợp sẵn, và phải tự bảo trì. Trong thực tế, nên dùng managed detection khi có ngân sách — hệ thống này phù hợp cho tổ chức nhỏ hoặc mục đích học tập."*
+> *"Dạ, AWS GuardDuty và Azure Sentinel là dịch vụ managed detection — Google có dịch vụ tương đương là Chronicle và SCC Premium. Hệ thống của em khác ở chỗ: đây là pipeline tự xây hoàn toàn bằng dịch vụ cơ bản — không dùng managed detection. Ưu điểm: miễn phí, linh hoạt, hiểu rõ từng thành phần. Nhược điểm: phạm vi hẹp, thiếu threat intelligence tích hợp sẵn, và phải tự bảo trì. Trong thực tế, nên dùng managed detection khi có giấy phép và đủ ngân sách — hệ thống này phù hợp cho tổ chức nhỏ hoặc mục đích học tập."*
 
 ---
 
