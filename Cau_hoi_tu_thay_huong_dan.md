@@ -1,6 +1,6 @@
 # CÂU HỎI TỪ THẦY HƯỚNG DẪN — CHUẨN BỊ BẢO VỆ
 
-**Nguồn:** Buổi trao đổi với thầy Đỗ Hoàng Cương (02-03/08/2026)
+**Nguồn:** Buổi trao đổi với thầy Đỗ Hoàng Cường (02-03/08/2026)
 **Lưu ý từ thầy:** *"Mấy em phải làm nổi bật giá trị học thuật, những ưu điểm và những chỗ thực nghiệm công phu. Hiểu biết ok hết rồi, cứ tự tin, từ tốn mà bảo vệ."*
 **Tinh thần:** *"Sẵn sàng tự phản biện chính đề tài của mình để đưa ra hướng phát triển, các câu hỏi nghiên cứu mở — chứ không phải luôn luôn bảo vệ cái đúng."*
 
