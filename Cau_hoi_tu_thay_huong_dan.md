@@ -111,13 +111,15 @@ Hop:       |----W1---------|
 
 **Trả lời gợi ý:**
 
-> *"Dạ, đầu tiên về mặt kỹ thuật: User Agent được ghi nhận bởi Cloud Audit Log từ phía server — ghi lại giá trị mà client gửi lên. Kẻ tấn công dùng gcloud CLI hoặc SDK có thể đặt User Agent tùy ý, nên về lý thuyết có thể giả mạo.*
+> *"Dạ, em đã thử nghiệm thực tế bằng cách viết script Python patch User Agent header trước khi gọi GCS API. Kết quả: Cloud Audit Log vẫn ghi đúng User Agent gốc là `gcloud-python/3.10.1 gl-python/3.13.0 grpc/1.80.0` — việc giả mạo không thành công.*
 >
-> *Tuy nhiên, AI của nhóm đã thể hiện tư duy suy luận tốt — như thầy đã nhận xét ở mục 3.6.2b trong báo cáo: 'Bất kể IP nội địa hay công cụ gì, hành vi tải hàng loạt từ Honeypot Bucket luôn là dấu hiệu bất thường nghiêm trọng.' Tức là AI xét tổng thể ngữ cảnh — honeypot + số lượng file + thời gian — chứ không chỉ dựa vào User Agent. Dù User Agent trông vô hại, việc tải 55 file từ honeypot vẫn bất thường → AI vẫn giữ severity HIGH/CRITICAL.*
+> *Lý do: Google Cloud SDK (Python, gsutil, gcloud CLI) đặt User Agent ở tầng gRPC/google-auth transport — thấp hơn tầng HTTP headers mà người dùng có thể can thiệp. SDK tự ghi đè UA trước mỗi request, nên dù kẻ tấn công patch header, Audit Log vẫn ghi đúng công cụ thực tế.*
 >
-> *Nhưng em thẳng thắn ghi nhận: đây là trường hợp chưa được kiểm chứng cụ thể trong 18 lần thử nghiệm — là hướng nghiên cứu mở."*
+> *Kẻ tấn công chỉ có thể giả mạo UA nếu bỏ SDK hoàn toàn, tự viết HTTP request thuần gọi thẳng GCS REST API — nhưng phải tự xử lý OAuth2 token, phức tạp hơn nhiều.*
+>
+> *Và dù trường hợp xấu nhất là giả mạo được, AI vẫn xét tổng thể ngữ cảnh — như thầy đã nhận xét ở mục 3.6.2b: 'Bất kể IP nội địa hay công cụ gì, hành vi tải hàng loạt từ Honeypot Bucket luôn là dấu hiệu bất thường nghiêm trọng.' AI vẫn giữ severity HIGH/CRITICAL."*
 
-**⚠️ Đính chính:** Câu trả lời ban đầu nói "khả năng sửa User Agent gần như bằng 0" — **sai**. User Agent CÓ THỂ bị giả mạo. Điểm mạnh thực sự là AI xét tổng thể ngữ cảnh chứ không phụ thuộc 1 yếu tố.
+**✅ Đính chính (sau thử nghiệm):** Câu trả lời ban đầu nói "khả năng sửa User Agent gần như bằng 0" — **đúng khi dùng SDK**, vì SDK ghi đè UA ở tầng transport. Chỉ sai nếu kẻ tấn công dùng HTTP thuần gọi GCS REST API trực tiếp.
 
 ---
 
@@ -180,7 +182,7 @@ Hop:       |----W1---------|
 | # | Câu trả lời ban đầu (sai/thiếu) | Đính chính |
 |---|---|---|
 | 3 | "Bảo mật Telegram bật nhất" | Telegram Bot API chỉ dùng TLS, không end-to-end. Nhấn mạnh HMAC chống giả mạo |
-| 7 | "Khả năng sửa User Agent gần như bằng 0" | User Agent CÓ THỂ bị giả mạo. Rào chắn là AI xét tổng thể ngữ cảnh |
+| 7 | ~~"Khả năng sửa UA gần bằng 0"~~ | **Đúng khi dùng SDK** — đã thử nghiệm thực tế, SDK ghi đè UA ở tầng transport. Chỉ giả mạo được nếu dùng HTTP thuần |
 | 11 | "Khả năng xung đột là không thể" | Nói "không xảy ra trong thiết kế hiện tại" + tự phản biện + human-in-the-loop |
 
 ---
