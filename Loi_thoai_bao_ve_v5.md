@@ -135,7 +135,7 @@
 ### Slide 12 — Ma trận thử nghiệm
 👤 NGƯỜI B
 
-🎤 *"Ma trận gồm 18 kịch bản kết hợp các yếu tố: 2 công cụ tấn công (gsutil và Python SDK), IP trong nước và nước ngoài, trong giờ và ngoài giờ hành chính. Tỷ lệ phát hiện đạt 100% — tất cả 18 kịch bản đều được phát hiện và cảnh báo đúng. Đặc biệt, với IP nước ngoài, AI đánh giá CRITICAL 83% trường hợp — cho thấy việc làm giàu ngữ cảnh giúp AI phân biệt mức độ nguy hiểm hiệu quả."*
+🎤 *"Ma trận gồm 18 lần thử nghiệm — tất cả có cùng hành vi cốt lõi là rút trộm dữ liệu từ Honeypot Bucket, nhưng thay đổi 3 biến số: công cụ tấn công (gsutil và Python SDK), vị trí IP (Việt Nam và nước ngoài), khung giờ (trong giờ và ngoài giờ hành chính). Mục đích: cô lập biến số để đo lường ảnh hưởng của Context Enrichment lên đánh giá AI. Tỷ lệ phát hiện đạt 100% — tất cả các trường hợp thử nghiệm đều được phát hiện và cảnh báo đúng. Đặc biệt, với IP nước ngoài, AI đánh giá CRITICAL 83% trường hợp — cho thấy làm giàu ngữ cảnh giúp AI phân biệt mức độ nguy hiểm hiệu quả hơn."*
 
 ⏱️ ~35 giây
 
@@ -208,6 +208,8 @@
 ### B9 — Dual-Pipeline (Bulk vs Real-Time)
 🎤 *"Dạ có thể giảm MTTD xuống 10-15 giây. Em đã thử nghiệm luồng B dùng Log Sink trực tiếp thay vì Cloud Monitoring. Tuy nhiên, mỗi sự kiện log đều kích hoạt 1 Cloud Function nên chi phí tăng tuyến tính. Em chỉ áp dụng cho tài sản trọng yếu (Crown Jewel) — còn tải hàng loạt vẫn dùng cửa sổ gom chỉ số để cân bằng chi phí."*
 
+### B10 — Tumbling Window vs Hop Window
+🎤 *"Giả sử kẻ tấn công thông minh — biết ngưỡng là 25 file trong 60 giây. Chúng tải 15 file ở giây thứ 55, nghỉ 10 giây, rồi tải tiếp 15 file ở giây thứ 65. Với Tumbling Window, 15 file rơi vào cửa sổ 1, 15 file rơi vào cửa sổ 2 — không cửa sổ nào đạt ngưỡng 25. Nhưng với Hop Window, cửa sổ 30-90s bắt được tất cả 30 file — vượt ngưỡng — phát hiện thành công."*
 ---
 
 ## Phân chia Q&A
