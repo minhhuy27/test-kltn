@@ -210,6 +210,8 @@
 
 ### B10 — Tumbling Window vs Hop Window
 🎤 *"Giả sử kẻ tấn công thông minh — biết ngưỡng là 25 file trong 60 giây. Chúng tải 15 file ở giây thứ 55, nghỉ 10 giây, rồi tải tiếp 15 file ở giây thứ 65. Với Tumbling Window, 15 file rơi vào cửa sổ 1, 15 file rơi vào cửa sổ 2 — không cửa sổ nào đạt ngưỡng 25. Nhưng với Hop Window, cửa sổ 30-90s bắt được tất cả 30 file — vượt ngưỡng — phát hiện thành công."*
+
+
 ---
 
 ## Phân chia Q&A
