@@ -182,7 +182,7 @@
 ## BACKUP — Lời thoại khi bị hỏi
 
 ### B1 — YARA-L Rules trên BigQuery
-🎤 *"Do không có Chronicle license, em chuyển logic YARA-L sang SQL trên BigQuery. 3 luật: Mass Download đếm trên 25 objects.get trong 60 giây, Off-Hours kiểm tra truy cập ngoài giờ hành chính, và Suspicious Tool phát hiện gsutil hoặc Python SDK. Kết quả query BigQuery cho thấy hệ thống phát hiện chính xác 55 file được tải."*
+🎤 *"Do không có Chronicle license, em chuyển logic YARA-L sang SQL trên BigQuery. 3 luật: Mass Download đếm trên 25 objects.get trong 60 giây, Off-Hours kiểm tra truy cập ngoài giờ hành chính, và Suspicious Tool phát hiện Python SDK. Kết quả query BigQuery cho thấy hệ thống phát hiện chính xác 55 file được tải."*
 
 ### B2 — Infrastructure as Code (Terraform)
 🎤 *"Toàn bộ hạ tầng được quản lý bằng 7 modules  Terraform: iam, network, storage, logging_data, serverless, scc, monitoring. Bất kỳ ai có mã nguồn đều có thể tái tạo hoàn toàn lab trong vài phút."*
